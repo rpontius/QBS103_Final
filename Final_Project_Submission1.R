@@ -16,7 +16,6 @@ head(df_genes[,1])
 base_green <- "#ADCCA3"
 base_brown <- "#D2B48C"
 pastel_olive <- darken(base_green, amount = 0.2) 
-
 head(df_genes)
 colnames(df_genes)[1] <- "Genes" # Names first column of df_genes "Genes"
 gene_ABCD3 <- filter(df_genes, df_genes["Genes"]== "ABCD3") # Pulls the row for gene ABCD3 into a data frame by filtering.
