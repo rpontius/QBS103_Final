@@ -1,12 +1,22 @@
+---
+title: "Pontius_Submission_1"
+output: Pontius_Submission_1
+date: "2025-07-14"
+---
+
+## Histogram
+
+```{r, tidy=TRUE}
+# In addition to the inclass lectures/assignments, I referenced the following Youtube video's to further my knowledge and understanding of how to use ggplot2 and tidyverse:
+# https://www.youtube.com/watch?v=Bg4qxVNaDck
+# https://www.youtube.com/watch?v=Rp6Xwy4BfxI
+# In addition, https://chat.dartmouth.edu/ was an additional resource I used for parts of this assignment
 
 library(tidyr)
 library(tidyverse)
 library(ggplot2)
 library(colorspace)
 
-# I referenced the following youtube video's to further my knowledge and understanding of how to use ggplot2 and tidyverse:
-# https://www.youtube.com/watch?v=Bg4qxVNaDck
-# https://www.youtube.com/watch?v=Rp6Xwy4BfxI
 getwd()
 
 df_genes <- read.csv("~/Desktop/QBS_103/Final_Project/GSE157103_genes.csv")
@@ -16,8 +26,7 @@ head(rownames(df_genes))
 head(df_genes[,1])
 
 
-base_green <- "#ADCCA3"
-base_brown <- "#D2B48C"
+base_green <- "#ADCCA3" # chat.dartmout.edu taught me how to assign colors using colorspace.
 pastel_olive <- darken(base_green, amount = 0.2) 
 head(df_genes)
 
@@ -31,7 +40,10 @@ hist(hist_values, breaks = 15,
      ylim = c(0, 20), xlim = c(0, 20),
      col= pastel_olive)
 
+```
 
+## Scatter Plot
+```{r, tidy=TRUE}
 samples <- colnames(df_genes)[-1] # Pull column names into a data frame.
 df_ABCD3 <- data.frame(participant_id = samples, Expression = hist_values) # Initialize new data frame with expression values and charlson_score, for scatterplot.
 # I used chat.dartmout.edu for help on merging the data frames. It suggested the merge() function and explained how to approach it.
@@ -39,15 +51,18 @@ merged_df <- merge(df_ABCD3, df_matrix, by = "participant_id") # Merge Data fram
 head(merged_df)
 
 ## Scatter Plot
-ggplot(merged_df, aes(merged_df$Expression, merged_df$charlson_score)) +
+ggplot(merged_df, aes(Expression, charlson_score)) +
   geom_point() +
   theme_classic() +
   labs(title="ABCD3 Gene Expression vs. Charlson Score", x = "Expression", y = "Charlson Score")
-  
+```
 
+## Including Plots
 
-## Boxplot
-# I used chat.dartmout.edu to help explain to me what was meant by "boxplot of gene expression separated by both categorical covariates" in the rubric, and this is the approach it told me to take.
+You can also embed plots, for example:
+
+```{r, tidy=TRUE}
+# I used chat.dartmout.edu to help explain to me what was meant by "boxplot of gene expression separated by both categorical covariates" in the rubric, and it told me to approach it like I would a normal boxplot but use the "fill" function for the second variable, which is what I did.
 # chat.dartmout.edu told me to use the "fill" feature for sex variable and it told me how to adjust the width of my box plots, and also how to center my title.
 ggplot(merged_df, aes(x = icu_status, y = Expression, fill = sex)) +
   geom_boxplot(width = 0.8) +
@@ -55,7 +70,6 @@ ggplot(merged_df, aes(x = icu_status, y = Expression, fill = sex)) +
   labs(title="ABCD3 Gene Expression by Biological Sex and ICU Status", x = "ICU Status",
        y= "Gene Expression")
 
+```
 
-
-
-
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
