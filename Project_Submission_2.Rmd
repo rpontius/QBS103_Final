@@ -1,0 +1,91 @@
+---
+title: "Submission 2 Final Project"
+author: "Ryan Pontius"
+date: "2025-07-21"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+library(tidyr)
+library(tidyverse)
+library(ggplot2)
+library(colorspace)
+library(glue)
+library(tools)
+
+# I referenced the following youtube video's to further my knowledge and understanding of how to use ggplot2 and tidyverse:
+# https://www.youtube.com/watch?v=Bg4qxVNaDck
+# https://www.youtube.com/watch?v=Rp6Xwy4BfxI
+
+base_green <- "#ADCCA3"
+base_brown <- "#D2B48C"
+pastel_olive <- darken(base_green, amount = 0.2) 
+head(df_genes)
+
+getwd()
+
+df_genes <- read.csv("~/Desktop/QBS_103/Final_Project/GSE157103_genes.csv")
+df_matrix <- read.csv("~/Desktop/QBS_103/Final_Project/GSE157103_series_matrix-1.csv")
+
+
+colnames(df_genes)[1] <- "Genes" # Names first column of df_genes "Genes"
+gene_list <- c("ABCD1", "ABCD2", "ABCD3")
+categorical_covariates <- c("sex", "icu_status")
+
+plot_genes <- function(data_frame, list_of_genes, continuous_cov, categorical_cov_vec) {
+  categorical_cov_1 <- categorical_cov_vec[1]
+  categorical_cov_2 <- categorical_cov_vec[2]
+  
+  catagorical_cov_1_string <-toTitleCase(gsub(pattern='_', replacement = ' ', categorical_cov_1))
+  catagorical_cov_2_string <- toTitleCase(gsub(pattern='_', replacement = ' ', categorical_cov_2))
+  continuous_cov_string <-  toTitleCase(gsub(pattern='_', replacement = ' ', continuous_cov))
+  
+  for (gene in list_of_genes){
+    gene_expression_vals <- filter(data_frame, data_frame["Genes"]== gene) # Pulls the row for gene ABCD3 into a data frame by filtering.
+    hist_values <- as.numeric(gene_expression_vals[, -1]) # I asked chatgpt for help here. I could not figure out how to pull rows, not columns. 
+    max_value <- max(hist_values, na.rm = TRUE)
+    ## Histogram
+    # chat.dartmouth.edu made h_temp/max_frequency for me. My histogram bars were running off the y-axis. This fixes that.
+    h_temp <- hist(hist_values, breaks = 20, plot = FALSE)
+    max_frequency <- max(h_temp$counts)
+    
+    histogram <- hist(hist_values, breaks = 20, 
+         main = glue("{gene} Expression"), 
+         xlab = "Expression Values",
+         ylim = c(0, max_frequency + 5), xlim = c(0, max_value + 1),
+         col= pastel_olive)
+    print(histogram)
+    
+    ## Scatterplot
+    samples <- colnames(df_genes)[-1] # Pull column names into a data frame.
+    df_temp <- data.frame(participant_id = samples, Expression = hist_values) # Initialize new data frame with expression values for scatterplot.
+    # I used chat.dartmout.edu for help on merging the data frames. It suggested the merge() function and explained how to approach it.
+    merged_df <- merge(df_temp, df_matrix, by = "participant_id") # Merge Data frames by "participant_id".
+    # I could not figure out how to assign the continuous_cov variable I passed through the function to ggplot. I asked chat.dartmout.edu and it said to use .data[[]]
+    scatterplot <- ggplot(merged_df, aes(Expression, .data[[continuous_cov]])) +
+      geom_point() +
+      theme_classic() +
+      labs(title= glue("{gene} Gene Expression vs. {continuous_cov}"), x = "Expression", y = continuous_cov_string)
+    print(scatterplot)
+    
+    ## Boxplot
+    # I used chat.dartmout.edu to help explain to me what was meant by "boxplot of gene expression separated by both categorical covariates" in the rubric, and this is the approach it told me to take.
+    # chat.dartmout.edu told me to use the "fill" feature for sex variable and it told me how to adjust the width of my box plots, and also how to center my title.
+    boxplot <- ggplot(merged_df, aes(x = .data[[categorical_cov_1]], 
+                                     y = Expression, fill = .data[[categorical_cov_2]])) +
+      geom_boxplot(width = 0.8) +
+      theme_classic() +
+      labs(title=glue("{gene} Gene Expression by {catagorical_cov_1_string} and {catagorical_cov_2_string}"), 
+           x = glue("{catagorical_cov_2_string}"),
+           y= glue("{gene} Expression"), fill = glue("{catagorical_cov_2_string}"))
+    print(boxplot)
+    
+  }
+  
+}
+
+
+plot_genes(data_frame = df_genes, list_of_genes = gene_list, continuous_cov = "charlson_score", categorical_cov_vec = categorical_covariates)
+
+```
